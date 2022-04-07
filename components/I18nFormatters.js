@@ -9,7 +9,7 @@ export const getI18nLink = linkProps => chunks =>
 export const I18nBold = chunks => <strong>{chunks}</strong>;
 export const I18nItalic = chunks => <i>{chunks}</i>;
 export const I18nSupportLink = chunks => (
-  <StyledLink href="mailto:support@opencollective.com">
+  <StyledLink as={Link} openInNewTab href="/help">
     {chunks.length ? chunks : 'support@opencollective.com'}
   </StyledLink>
 );
