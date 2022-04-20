@@ -13,23 +13,22 @@ import i18nSearchSortingOptions from '../lib/i18n/search-sorting-options';
 import { parseToBoolean } from '../lib/utils';
 
 import Container from '../components/Container';
+import PledgedCollectiveCard from '../components/discover/PledgedCollectiveCard';
 import ErrorPage from '../components/ErrorPage';
 import { Box, Flex } from '../components/Grid';
+import Hide from '../components/Hide';
 import { getI18nLink, I18nSupportLink } from '../components/I18nFormatters';
 import Image from '../components/Image';
 import InputTypeCountry from '../components/InputTypeCountry';
-import Link from '../components/Link';
 import LoadingGrid from '../components/LoadingGrid';
 import Page from '../components/Page';
 import Pagination from '../components/Pagination';
-import PledgedCollectiveCard from '../components/search-page/PledgedCollectiveCard';
 import SearchCollectiveCard from '../components/search-page/SearchCollectiveCard';
 import SearchForm from '../components/SearchForm';
 import StyledButton from '../components/StyledButton';
 import StyledFilters from '../components/StyledFilters';
 import StyledHr from '../components/StyledHr';
 import { fadeIn } from '../components/StyledKeyframes';
-import StyledLink from '../components/StyledLink';
 import { StyledSelectFilter } from '../components/StyledSelectFilter';
 import StyledTag from '../components/StyledTag';
 import { H1, P, Span } from '../components/Text';
@@ -265,7 +264,6 @@ class SearchPage extends React.Component {
       return <ErrorPage data={this.props.data} />;
     }
 
-    const filters = ['ALL', 'COLLECTIVE', 'EVENT', 'ORGANIZATION', 'HOST', 'PROJECT', 'FUND'];
     const { limit = 20, offset, totalCount = 0 } = accounts || {};
     const showCollectives = !!accounts?.nodes;
     const getOption = value => ({ label: i18nSearchSortingOptions(intl, value), value });
@@ -273,57 +271,72 @@ class SearchPage extends React.Component {
 
     return (
       <Page title="Search" showSearch={false}>
-        <Container mx="auto" px={3} py={[4, '40px']} width={[1, 0.85]} maxWidth={1200}>
-          <Container
-            alignItems="center"
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            textAlign="center"
-            data-cy="search-banner"
-          >
-            <H1 fontSize="32px" fontWeight="700">
-              <FormattedMessage defaultMessage="Search in Open Collective" />
-            </H1>
-            <Flex justifyContent="center" flex="1 1 1" marginTop={16} width={1}>
-              <SearchFormContainer p={2}>
-                <SearchForm
-                  borderRadius="100px"
-                  fontSize="16px"
-                  py="1px"
-                  placeholder="Search by name, slug, tag, description..."
-                  defaultValue={term}
-                  onSubmit={this.refetch}
-                />
-              </SearchFormContainer>
-            </Flex>
-          </Container>
-          <Flex mt={4} mb={4} mx="auto" flexDirection={['column', 'row']}>
-            <Container width={[1, 4 / 5]}>
+        <Container
+          backgroundImage="url(/static/images/search-background.png)"
+          backgroundPosition="center top"
+          backgroundSize="cover"
+          backgroundRepeat="no-repeat"
+          height={['136px', '230px']}
+          data-cy="search-banner"
+          alignItems="center"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          textAlign="center"
+        >
+          <Flex justifyContent="center" flex="1 1 1" width={['288px', 1]}>
+            <SearchFormContainer>
+              <SearchForm
+                borderRadius="100px"
+                fontSize="16px"
+                placeholder="Search by name, slug, tag, description..."
+                defaultValue={term}
+                onSubmit={this.refetch}
+              />
+            </SearchFormContainer>
+          </Flex>
+        </Container>
+        <Container mx="auto" px={3} width={[1, 0.85]} maxWidth={1200}>
+          <Flex mb={4} mx="auto" flexDirection={['column', 'row']} justifyContent="center">
+            <Hide xs sm>
               <StyledFilters
-                filters={filters}
+                filters={Object.keys(FILTERS)}
                 getLabel={key => intl.formatMessage(I18nFilters[key], { count: 10 })}
                 selected={this.state.filter}
-                justifyContent="left"
                 minButtonWidth="95px"
                 onChange={filter => {
                   this.setState({ filter: filter });
                   this.onClick(filter);
                 }}
               />
-            </Container>
-            <Container width={[1, 1 / 5]} pt={[2, 0]}>
+            </Hide>
+            <Hide md lg>
+              <StyledSelectFilter
+                inputId="collective-type-filter"
+                value={{ label: intl.formatMessage(I18nFilters[this.state.filter]), value: this.state.filter }}
+                options={Object.keys(FILTERS).map(key => ({ label: intl.formatMessage(I18nFilters[key]), value: key }))}
+                onChange={({ value }) => {
+                  this.setState({ filter: value });
+                  this.onClick(value);
+                }}
+              />
+            </Hide>
+          </Flex>
+          <StyledHr mt="30px" mb="24px" flex="1" borderStyle="solid" borderColor="rgba(50, 51, 52, 0.2)" />
+          <Flex flexDirection={['column', 'row']}>
+            <Container pr={[0, '19px']}>
+              <FilterLabel htmlFor="sort-filter-type">
+                <FormattedMessage defaultMessage="Sort" />
+              </FilterLabel>
               <StyledSelectFilter
                 inputId="sort-filter"
                 value={this.props.sortBy ? getOption(this.props.sortBy) : options[0]}
                 options={options}
                 onChange={sortBy => this.changeSort(sortBy)}
+                minWidth={[0, '200px']}
               />
             </Container>
-          </Flex>
-          <StyledHr mt="30px" mb="24px" flex="1" borderStyle="solid" borderColor="rgba(50, 51, 52, 0.2)" />
-          <Flex flexDirection={['column', 'row']}>
-            <Container width={[1, '200px']}>
+            <Container pt={['20px', 0]}>
               <FilterLabel htmlFor="country-filter-type">
                 <FormattedMessage id="collective.country.label" defaultMessage="Country" />
               </FilterLabel>
@@ -332,14 +345,15 @@ class SearchPage extends React.Component {
                 defaultValue="ALL"
                 customOptions={[{ label: <FormattedMessage defaultMessage="All countries" />, value: 'ALL' }]}
                 onChange={country => this.changeCountry(country)}
+                minWidth={[0, '200px']}
               />
             </Container>
             {tagStats?.nodes?.length > 0 && (
-              <Container width={[1, 3 / 4]} pl={[0, '23px']} pt={[2, 0]}>
+              <Container pl={[0, '23px']} pt={['20px', 0]}>
                 <FilterLabel htmlFor="tag-filter-type">
                   <FormattedMessage defaultMessage="Tags" />
                 </FilterLabel>
-                <Flex flexWrap="wrap" width={[null, '1000px']}>
+                <Flex flexWrap="wrap">
                   {tagStats?.nodes
                     ?.filter(node => !IGNORED_TAGS.includes(node.tag))
                     .map(node => (
@@ -448,34 +462,21 @@ class SearchPage extends React.Component {
               </StyledButton>
             </Flex>
           )}
-
           {showCollectives && accounts?.nodes?.length !== 0 && (
             <Flex py={3} width={1} justifyContent="center" flexDirection="column" alignItems="center">
               <P pt={3} pb={3} borderTop="1px solid #E6E6E6">
                 <em>
                   <FormattedMessage
-                    id="search.ifYouDontSee"
-                    defaultMessage="If you don't see the collective you're looking for:"
+                    defaultMessage="Can't find what you're looking for? Check our <Link>Docs & Help!</Link>"
+                    values={{
+                      Link: getI18nLink({
+                        href: 'https://opencollective.com/help',
+                        openInNewTab: true,
+                      }),
+                    }}
                   />
                 </em>
               </P>
-              {
-                <Link href={{ pathname: '/pledges/new', query: { name: term } }}>
-                  <StyledLink
-                    as={Container}
-                    display="block"
-                    fontSize="14px"
-                    fontWeight="bold"
-                    maxWidth="220px"
-                    py={2}
-                    px={4}
-                    textAlign="center"
-                    buttonStyle="primary"
-                  >
-                    <FormattedMessage id="menu.createPledge" defaultMessage="Make a Pledge" />
-                  </StyledLink>
-                </Link>
-              }
             </Flex>
           )}
         </Container>
