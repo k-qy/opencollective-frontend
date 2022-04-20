@@ -2014,6 +2014,7 @@
   "ResendEmail": "Wyślij ponownie e-mail",
   "ResendEmailSuccessful": "Sprawdź swoją pocztę!",
   "ResendInvite": "Resend invite",
+  "ResendInviteEmail": "Resend Invite",
   "ResendInviteSuccessful": "Invite sent",
   "Reset": "Reset",
   "response.status.yes": "{name} is going",
